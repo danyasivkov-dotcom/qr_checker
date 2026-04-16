@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Проверка пропусков QR</title>
-  <script src="https://unpkg.com/html5-qrcode" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     :root {
       --bg: #0f172a;
@@ -155,7 +155,7 @@
     const DEFAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4-Wq6Vt7HTqFgFSLV8EP_XQzEHzCUax5IbSUEj2vkv4ekA3y4r8y8pC_6ePxHpv6r5WzGkhnSls9m/pub?output=csv";
     const STORAGE_KEY = "qr_pass_db_v1";
     const STORAGE_URL_KEY = "qr_pass_csv_url_v1";
-    const html5QrCode = new Html5Qrcode("reader");
+    let html5QrCode = null;
     let currentCameras = [];
     let scannerRunning = false;
     let records = [];
@@ -309,6 +309,7 @@
 
     async function loadCameras() {
       try {
+        if (typeof Html5Qrcode === "undefined") throw new Error("Библиотека сканера не загрузилась");
         currentCameras = await Html5Qrcode.getCameras();
         const select = $("cameraSelect");
         select.innerHTML = "";
@@ -338,6 +339,8 @@
         return;
       }
       try {
+        if (typeof Html5Qrcode === "undefined") throw new Error("Библиотека сканера не загрузилась");
+        if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
         await html5QrCode.start(
           cameraId,
           { fps: 10, qrbox: { width: 250, height: 250 } },
