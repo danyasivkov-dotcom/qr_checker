@@ -2,393 +2,535 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Проверка пропусков QR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>QR Checker КПП</title>
+
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --muted: #94a3b8;
-      --text: #e5e7eb;
-      --green: #166534;
-      --red: #991b1b;
-      --yellow: #92400e;
-      --blue: #1d4ed8;
-      --border: #334155;
-    }
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: #071a44;
+      color: #fff;
       padding: 16px;
     }
-    .wrap { max-width: 720px; margin: 0 auto; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 16px;
+      background: #091739;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset;
     }
-    h1, h2 { margin: 0 0 12px; }
-    .muted { color: var(--muted); font-size: 14px; }
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr;
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    .row {
+      display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
-    input, button, select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 220px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #35518a;
+      background: #0a1f4d;
+      color: #fff;
       font-size: 16px;
     }
-    input, select { background: #0b1220; color: var(--text); }
+
     button {
-      background: var(--blue);
-      color: white;
-      font-weight: bold;
+      padding: 14px 18px;
+      border: none;
+      border-radius: 12px;
       cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
     }
-    button.secondary { background: #374151; }
-    button.red { background: #7f1d1d; }
+
+    .btn-primary {
+      background: #1f7aec;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #20345f;
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: #a71717;
+      color: #fff;
+    }
+
+    .statusLine {
+      margin-top: 12px;
+      font-size: 15px;
+      color: #c9d6ff;
+      min-height: 22px;
+    }
+
+    .status-ok {
+      color: #72f0a6;
+    }
+
+    .status-error {
+      color: #ff8f8f;
+    }
+
     #reader {
       width: 100%;
+      min-height: 260px;
       overflow: hidden;
-      border-radius: 12px;
+      border-radius: 16px;
       background: #000;
     }
-    .statusBox {
-      font-size: 28px;
-      font-weight: 800;
-      text-align: center;
-      padding: 16px;
-      border-radius: 12px;
-      margin-top: 12px;
+
+    .resultBox {
+      margin-top: 16px;
+      display: none;
     }
-    .allowed { background: var(--green); }
-    .denied { background: var(--red); }
-    .unknown { background: var(--yellow); }
-    .person {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 12px;
-      align-items: start;
-      margin-top: 12px;
+
+    .resultCard {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
     }
-    .person img {
-      width: 120px;
-      height: 150px;
+
+    .photo {
+      width: 140px;
+      height: 180px;
+      border-radius: 14px;
       object-fit: cover;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #0b1220;
+      background: #1c2f5e;
+      border: 1px solid rgba(255,255,255,.1);
     }
-    .kv { margin: 6px 0; }
-    .small { font-size: 13px; color: var(--muted); }
-    .log {
-      background: #0b1220;
-      border-radius: 10px;
-      padding: 10px;
-      font-family: monospace;
-      font-size: 13px;
+
+    .personInfo {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .muted {
+      color: #aebce3;
+      font-size: 14px;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .name {
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin: 10px 0;
+    }
+
+    .rank {
+      font-size: 20px;
+      color: #d3e0ff;
+      margin-bottom: 12px;
+    }
+
+    .statusBox {
+      margin-top: 14px;
+      padding: 22px;
+      border-radius: 18px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .allowed {
+      background: #138a36;
+      color: #fff;
+    }
+
+    .denied {
+      background: #b31313;
+      color: #fff;
+    }
+
+    .notfound {
+      background: #b31313;
+      color: #fff;
+    }
+
+    .small {
+      font-size: 14px;
+      color: #aebce3;
+    }
+
+    .manualRow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .logBox {
+      background: #04102a;
+      border-radius: 14px;
+      padding: 14px;
+      max-height: 320px;
+      overflow: auto;
       white-space: pre-wrap;
-      min-height: 48px;
+      font-family: monospace;
+      font-size: 14px;
+      color: #e8eefc;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="container">
     <div class="card">
-      <h1>Проверка пропусков по QR</h1>
-      <div class="muted">Работает так: нажал «Обновить базу» при интернете → дальше можно сканировать офлайн по сохраненной локальной копии.</div>
+      <h1>QR Checker КПП</h1>
+      <div class="small">Источник базы: Google Sheets CSV</div>
     </div>
 
     <div class="card">
-      <h2>1. Источник базы</h2>
-      <div class="controls">
-        <input id="csvUrl" type="text" />
-        <button id="updateBtn">Обновить базу</button>
-        <div class="small" id="dbInfo">База еще не загружена</div>
+      <h2>1. Обновление базы</h2>
+      <div class="row">
+        <input
+          id="csvUrl"
+          type="text"
+          value="https://docs.google.com/spreadsheets/d/e/2PACX-1vT4-Wq6Vt7HTqFgFSLV8EP_XQzEHzCUax5IbSUEj2vkv4ekA3y4r8y8pC_6ePxHpv6r5WzGkhnSls9m/pub?output=csv"
+        />
+        <button id="updateBtn" class="btn-primary">Обновить базу</button>
+      </div>
+      <div class="statusLine" id="updateStatus">Локальная база еще не загружена</div>
+      <div class="small" style="margin-top:8px;">
+        Ожидаемые колонки: id, qr_token, rank, last_name, first_name, photo_url, status
       </div>
     </div>
 
     <div class="card">
       <h2>2. Сканирование</h2>
-      <div class="controls">
-        <select id="cameraSelect"></select>
-        <button id="startBtn">Запустить сканер</button>
-        <button id="stopBtn" class="secondary">Остановить сканер</button>
-        <input id="manualToken" type="text" placeholder="Или вставь токен вручную" />
-        <button id="checkManualBtn" class="secondary">Проверить токен вручную</button>
+      <div class="row" style="margin-bottom:10px;">
+        <button id="startScanBtn" class="btn-primary">Запустить сканер</button>
+        <button id="stopScanBtn" class="btn-danger">Остановить сканер</button>
       </div>
-      <div style="margin-top:12px" id="reader"></div>
+      <div id="reader"></div>
+
+      <div class="manualRow">
+        <input id="manualToken" type="text" placeholder="Ввести токен вручную" />
+        <button id="manualCheckBtn" class="btn-secondary">Проверить токен</button>
+      </div>
     </div>
 
     <div class="card">
       <h2>3. Результат</h2>
-      <div class="small">Считанный токен: <span id="lastToken">—</span></div>
-      <div id="resultStatus" class="statusBox unknown">ОЖИДАНИЕ СКАНИРОВАНИЯ</div>
-      <div id="personBox" class="person" style="display:none;">
-        <img id="photo" src="" alt="Фото" />
-        <div>
-          <div class="kv"><b>Звание:</b> <span id="rank">—</span></div>
-          <div class="kv"><b>ФИО:</b> <span id="fio">—</span></div>
-          <div class="kv"><b>Статус:</b> <span id="status">—</span></div>
-          <div class="kv"><b>ID:</b> <span id="personId">—</span></div>
+      <div class="muted" id="scannedToken">Считанный токен: —</div>
+
+      <div class="resultBox" id="resultBox">
+        <div class="resultCard">
+          <img id="photo" class="photo" src="" alt="Фото" />
+          <div class="personInfo">
+            <div class="rank" id="rank">—</div>
+            <div class="name" id="fullName">—</div>
+            <div class="small">Статус в базе: <b id="statusText">—</b></div>
+            <div id="resultStatus" class="statusBox denied">—</div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="card">
       <h2>4. Журнал</h2>
-      <div id="log" class="log"></div>
+      <div class="logBox" id="logBox"></div>
     </div>
   </div>
 
   <script>
-    const DEFAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4-Wq6Vt7HTqFgFSLV8EP_XQzEHzCUax5IbSUEj2vkv4ekA3y4r8y8pC_6ePxHpv6r5WzGkhnSls9m/pub?output=csv";
-    const STORAGE_KEY = "qr_pass_db_v1";
-    const STORAGE_URL_KEY = "qr_pass_csv_url_v1";
+    const DB_STORAGE_KEY = "qr_checker_local_db_v1";
+    const LOG_STORAGE_KEY = "qr_checker_log_v1";
+
+    let localDb = [];
     let html5QrCode = null;
-    let currentCameras = [];
     let scannerRunning = false;
-    let records = [];
-    let fieldMap = {};
 
     const $ = (id) => document.getElementById(id);
 
-    const headerAliases = {
-      id: ["id", "uid", "person_id", "pass_id", "record_id"],
-      qr_token: ["qr_token", "token", "qr", "code", "qr_id", "uuid", "pass_token"],
-      rank: ["rank", "zvanie", "звание", "rank_name"],
-      last_name: ["last_name", "lastname", "surname", "family_name", "фамилия"],
-      first_name: ["first_name", "firstname", "name", "имя"],
-      middle_name: ["middle_name", "middlename", "patronymic", "отчество"],
-      fio: ["fio", "full_name", "fullname", "фио"],
-      photo_url: ["photo_url", "photo", "image", "avatar", "photo_link", "image_url"],
-      status: ["status", "active", "access", "state", "доступ", "статус"]
-    };
-
-    function normalizeHeader(h) {
-      return String(h || "").trim().toLowerCase();
+    function log(message) {
+      const now = new Date().toLocaleString("ru-RU");
+      const line = `[${now}] ${message}`;
+      const current = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || "[]");
+      current.unshift(line);
+      const trimmed = current.slice(0, 200);
+      localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(trimmed));
+      renderLog();
     }
 
-    function log(msg) {
-      const now = new Date().toLocaleString();
-      const old = $("log").textContent;
-      $("log").textContent = `[${now}] ${msg}\n` + old;
+    function renderLog() {
+      const current = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || "[]");
+      $("logBox").textContent = current.join("\n");
     }
 
-    function detectFieldMap(rows) {
-      const headers = rows.length ? Object.keys(rows[0]) : [];
-      const normalized = headers.map(h => ({ raw: h, norm: normalizeHeader(h) }));
-      const map = {};
-      for (const [target, aliases] of Object.entries(headerAliases)) {
-        const found = normalized.find(h => aliases.includes(h.norm));
-        if (found) map[target] = found.raw;
-      }
-      return map;
+    function setStatus(text, type = "") {
+      const el = $("updateStatus");
+      el.textContent = text;
+      el.className = "statusLine";
+      if (type === "ok") el.classList.add("status-ok");
+      if (type === "error") el.classList.add("status-error");
     }
 
-    function getValue(row, key) {
-      const field = fieldMap[key];
-      return field ? (row[field] ?? "") : "";
+    function saveDb(db) {
+      localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db));
+      localDb = db;
     }
 
-    function buildFio(row) {
-      const explicit = getValue(row, "fio");
-      if (explicit) return explicit;
-      return [getValue(row, "last_name"), getValue(row, "first_name"), getValue(row, "middle_name")]
-        .filter(Boolean)
-        .join(" ") || "—";
+    function loadDb() {
+      const raw = localStorage.getItem(DB_STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          localDb = parsed;
+          return parsed;
+        }
+      } catch (e) {}
+      return [];
     }
 
-    function isAllowedStatus(statusRaw) {
-      const s = String(statusRaw || "").trim().toLowerCase();
-      return ["active", "активен", "разрешен", "allowed", "yes", "true", "1", "ok", "доступ", "access"].includes(s);
+    function getCell(obj, key) {
+      return obj[key] ?? obj[String(key).trim()] ?? "";
     }
 
-    function renderPerson(row, token) {
-      $("lastToken").textContent = token || "—";
-      if (!row) {
-        $("resultStatus").textContent = "ПРОПУСК НЕ НАЙДЕН";
-        $("resultStatus").className = "statusBox denied";
-        $("personBox").style.display = "none";
-        return;
+    function normalizeDriveImageUrl(url) {
+      const value = String(url || "").trim();
+      if (!value) return "";
+
+      const fileMatch = value.match(/\/file\/d\/([^/]+)/i);
+      if (fileMatch) {
+        return `https://drive.google.com/uc?export=view&id=${fileMatch[1]}`;
       }
 
-      const statusRaw = getValue(row, "status");
-      const allowed = isAllowedStatus(statusRaw);
-      $("resultStatus").textContent = allowed ? "ДОСТУП РАЗРЕШЕН" : "ДОСТУП ЗАПРЕЩЕН";
-      $("resultStatus").className = `statusBox ${allowed ? "allowed" : "denied"}`;
-      $("personBox").style.display = "grid";
-      $("rank").textContent = getValue(row, "rank") || "—";
-      $("fio").textContent = buildFio(row);
-      $("status").textContent = statusRaw || "—";
-      $("personId").textContent = getValue(row, "id") || "—";
-      const photo = getValue(row, "photo_url");
-      $("photo").src = photo || "";
-      $("photo").style.display = photo ? "block" : "none";
+      const openMatch = value.match(/[?&]id=([^&]+)/i);
+      if (openMatch) {
+        return `https://drive.google.com/uc?export=view&id=${openMatch[1]}`;
+      }
+
+      return value;
+    }
+
+    function normalizeStatus(statusRaw) {
+      return String(statusRaw || "").trim().toLowerCase();
+    }
+
+    function normalizeRow(row) {
+      return {
+        id: String(getCell(row, "id")).trim(),
+        qr_token: String(getCell(row, "qr_token")).trim(),
+        rank: String(getCell(row, "rank")).trim(),
+        last_name: String(getCell(row, "last_name")).trim(),
+        first_name: String(getCell(row, "first_name")).trim(),
+        photo_url: normalizeDriveImageUrl(getCell(row, "photo_url")),
+        status: normalizeStatus(getCell(row, "status")),
+        raw: row
+      };
+    }
+
+    function normalizeScannedToken(raw) {
+      const s = String(raw || "").trim();
+      if (!s) return "";
+
+      if (s.startsWith("MTC:GATE-PASS:")) {
+        return s.replace("MTC:GATE-PASS:", "").trim();
+      }
+
+      return s;
     }
 
     function findByToken(token) {
-      const cleaned = String(token || "").trim();
-      if (!cleaned) return null;
-      return records.find(r => String(getValue(r, "qr_token")).trim() === cleaned) || null;
+      const normalized = normalizeScannedToken(token);
+
+      return localDb.find(r => String(r.qr_token || "").trim() === normalized)
+          || localDb.find(r => String(r.id || "").trim() === normalized);
     }
 
-    function saveLocalDb(rows, url) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-      localStorage.setItem(STORAGE_URL_KEY, url);
+    function isAllowedStatus(statusRaw) {
+      const s = normalizeStatus(statusRaw);
+      return s === "active";
     }
 
-    function loadLocalDb() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const savedUrl = localStorage.getItem(STORAGE_URL_KEY);
-      $("csvUrl").value = savedUrl || DEFAULT_CSV_URL;
-      if (!raw) {
-        $("dbInfo").textContent = "Локальная база не найдена";
-        return;
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showNotFound(decodedText) {
+      $("resultBox").style.display = "block";
+      $("photo").src = "";
+      $("photo").style.display = "none";
+      $("rank").textContent = "—";
+      $("fullName").textContent = "—";
+      $("statusText").textContent = "—";
+      $("resultStatus").textContent = "ПРОПУСК НЕ НАЙДЕН";
+      $("resultStatus").className = "statusBox notfound";
+      $("scannedToken").textContent = `Считанный токен: ${decodedText}`;
+      log(`Сканирован токен ${decodedText}: не найден`);
+    }
+
+    function showResult(row, decodedText) {
+      const allowed = isAllowedStatus(row.status);
+
+      $("resultBox").style.display = "block";
+      $("scannedToken").textContent =
+        `Считанный токен: ${decodedText} → ${normalizeScannedToken(decodedText)}`;
+
+      if (row.photo_url) {
+        $("photo").src = row.photo_url;
+        $("photo").style.display = "block";
+      } else {
+        $("photo").src = "";
+        $("photo").style.display = "none";
       }
-      try {
-        records = JSON.parse(raw);
-        fieldMap = detectFieldMap(records);
-        $("dbInfo").textContent = `Локальная база загружена: ${records.length} записей`;
-        log(`Загружена локальная база: ${records.length} записей`);
-      } catch (e) {
-        $("dbInfo").textContent = "Ошибка чтения локальной базы";
-        log(`Ошибка чтения локальной базы: ${e.message}`);
-      }
+
+      $("rank").textContent = row.rank || "—";
+      $("fullName").textContent = `${row.last_name || ""} ${row.first_name || ""}`.trim() || "—";
+      $("statusText").textContent = row.status || "—";
+      $("resultStatus").textContent = allowed ? "ДОСТУП РАЗРЕШЕН" : "ДОСТУП ЗАПРЕЩЕН";
+      $("resultStatus").className = `statusBox ${allowed ? "allowed" : "denied"}`;
+
+      log(
+        `Сканирован токен ${decodedText} → ${normalizeScannedToken(decodedText)}: ` +
+        `${row.last_name || ""} ${row.first_name || ""}, статус=${row.status || "—"}, ` +
+        `${allowed ? "доступ разрешен" : "доступ запрещен"}`
+      );
     }
 
     async function updateDatabase() {
       const url = $("csvUrl").value.trim();
       if (!url) {
-        alert("Укажи ссылку на CSV");
+        setStatus("Укажи ссылку на CSV", "error");
         return;
       }
 
+      setStatus("Загрузка базы...");
       try {
-        $("dbInfo").textContent = "Обновление базы...";
         const response = await fetch(url, { cache: "no-store" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
         const csvText = await response.text();
 
         const parsed = Papa.parse(csvText, {
           header: true,
-          skipEmptyLines: true,
+          skipEmptyLines: true
         });
 
-        if (parsed.errors?.length) {
+        if (parsed.errors && parsed.errors.length) {
           console.warn(parsed.errors);
         }
 
-        records = parsed.data.filter(r => Object.values(r).some(v => String(v || "").trim() !== ""));
-        fieldMap = detectFieldMap(records);
+        const normalized = parsed.data
+          .map(normalizeRow)
+          .filter(r => r.qr_token || r.id);
 
-        if (!fieldMap.qr_token) {
-          throw new Error("Не найдена колонка qr_token/token/qr/code");
-        }
-
-        saveLocalDb(records, url);
-        $("dbInfo").textContent = `База обновлена: ${records.length} записей`;
-        log(`База обновлена: ${records.length} записей`);
-        alert("База обновлена");
-      } catch (e) {
-        $("dbInfo").textContent = `Ошибка обновления: ${e.message}`;
-        log(`Ошибка обновления: ${e.message}`);
-        alert("Ошибка обновления базы: " + e.message + "\n\nЕсли это Google Sheets, убедись, что таблица опубликована как CSV и открывается без авторизации.");
-      }
-    }
-
-    async function loadCameras() {
-      try {
-        if (typeof Html5Qrcode === "undefined") throw new Error("Библиотека сканера не загрузилась");
-        currentCameras = await Html5Qrcode.getCameras();
-        const select = $("cameraSelect");
-        select.innerHTML = "";
-        if (!currentCameras.length) {
-          const option = document.createElement("option");
-          option.textContent = "Камеры не найдены";
-          option.value = "";
-          select.appendChild(option);
-          return;
-        }
-        currentCameras.forEach((cam, i) => {
-          const option = document.createElement("option");
-          option.value = cam.id;
-          option.textContent = cam.label || `Камера ${i + 1}`;
-          select.appendChild(option);
-        });
-      } catch (e) {
-        log(`Ошибка получения камер: ${e.message}`);
+        saveDb(normalized);
+        setStatus(`База обновлена. Загружено записей: ${normalized.length}`, "ok");
+        log(`База обновлена. Загружено записей: ${normalized.length}`);
+      } catch (err) {
+        console.error(err);
+        setStatus(`Ошибка обновления: ${err.message}`, "error");
+        log(`Ошибка обновления базы: ${err.message}`);
       }
     }
 
     async function startScanner() {
       if (scannerRunning) return;
-      const cameraId = $("cameraSelect").value;
-      if (!cameraId) {
-        alert("Камера не выбрана");
-        return;
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
       }
+
       try {
-        if (typeof Html5Qrcode === "undefined") throw new Error("Библиотека сканера не загрузилась");
-        if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
         await html5QrCode.start(
-          cameraId,
-          { fps: 10, qrbox: { width: 250, height: 250 } },
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 220 },
           (decodedText) => {
-            const token = String(decodedText || "").trim();
-            const row = findByToken(token);
-            renderPerson(row, token);
-            log(row ? `Сканирован токен ${token}: найден` : `Сканирован токен ${token}: не найден`);
+            const row = findByToken(decodedText);
+            if (!row) {
+              showNotFound(decodedText);
+              return;
+            }
+            showResult(row, decodedText);
           },
           () => {}
         );
         scannerRunning = true;
         log("Сканер запущен");
-      } catch (e) {
-        alert("Не удалось запустить сканер: " + e.message);
-        log(`Ошибка запуска сканера: ${e.message}`);
+      } catch (err) {
+        console.error(err);
+        log(`Ошибка запуска сканера: ${err.message}`);
+        alert("Не удалось запустить сканер. Проверь доступ к камере.");
       }
     }
 
     async function stopScanner() {
-      if (!scannerRunning) return;
+      if (!html5QrCode || !scannerRunning) return;
       try {
         await html5QrCode.stop();
         await html5QrCode.clear();
         scannerRunning = false;
         log("Сканер остановлен");
-      } catch (e) {
-        log(`Ошибка остановки сканера: ${e.message}`);
+      } catch (err) {
+        console.error(err);
+        log(`Ошибка остановки сканера: ${err.message}`);
       }
     }
 
-    function checkManualToken() {
-      const token = $("manualToken").value.trim();
-      const row = findByToken(token);
-      renderPerson(row, token);
-      log(row ? `Ручная проверка токена ${token}: найден` : `Ручная проверка токена ${token}: не найден`);
+    function manualCheck() {
+      const value = $("manualToken").value.trim();
+      if (!value) return;
+
+      const row = findByToken(value);
+      if (!row) {
+        showNotFound(value);
+        return;
+      }
+
+      showResult(row, value);
     }
 
-    window.addEventListener("load", async () => {
-      $("csvUrl").value = localStorage.getItem(STORAGE_URL_KEY) || DEFAULT_CSV_URL;
-      loadLocalDb();
-      await loadCameras();
+    $("updateBtn").addEventListener("click", updateDatabase);
+    $("startScanBtn").addEventListener("click", startScanner);
+    $("stopScanBtn").addEventListener("click", stopScanner);
+    $("manualCheckBtn").addEventListener("click", manualCheck);
 
-      $("updateBtn").addEventListener("click", updateDatabase);
-      $("startBtn").addEventListener("click", startScanner);
-      $("stopBtn").addEventListener("click", stopScanner);
-      $("checkManualBtn").addEventListener("click", checkManualToken);
+    $("manualToken").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") manualCheck();
     });
+
+    loadDb();
+    renderLog();
+
+    if (localDb.length) {
+      setStatus(`Локальная база загружена. Записей: ${localDb.length}`, "ok");
+    } else {
+      setStatus("Локальная база еще не загружена");
+    }
   </script>
 </body>
 </html>
